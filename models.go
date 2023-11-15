@@ -34,3 +34,9 @@ type TempHumidityItem struct {
 	Latitude         string
 	Type             string
 }
+type WeatherResponse struct {
+	Main struct {
+		Temp     float64 `json:"temp"`
+		Humidity float64 `json:"humidity"`
+	} `json:"main"`
+}
