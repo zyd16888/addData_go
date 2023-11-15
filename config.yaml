@@ -1,0 +1,18 @@
+url: "http://192.168.0.174:22332/mqtt/addData.do"
+# excel file path
+excel_name: "data174.xlsx"
+sheet_name: "Sheet1"
+# 温湿度传感器
+temp_humidity_sheet: "temp_humidity"
+
+# 数据库配置
+host: "192.168.0.174"
+port: 8086
+database: "mddp_data_test"
+measurement: "data_normal_test"
+# 运行次数，0为无限次
+run_times: 0
+# 运行间隔，单位秒
+run_interval: 300
+# 缓存时间，单位秒
+cache_time: 280
