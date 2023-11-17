@@ -4,6 +4,7 @@ import (
 	"addData/logger"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math"
 	"math/rand"
 	"net/http"
@@ -251,13 +252,18 @@ func getTempHumidity(lon, lat string) (float64, float64) {
 	params.Add("lang", "zh_cn")
 	params.Add("units", "Metric")
 
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Get(fmt.Sprintf("%s?%s", baseUrl, params.Encode()))
+	httpClient := &http.Client{Timeout: 10 * time.Second}
+	resp, err := httpClient.Get(fmt.Sprintf("%s?%s", baseUrl, params.Encode()))
 	if err != nil {
 		loger.Error.Printf("getTempHumidity error: %v", err)
 		return 0, 0
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			loger.Error.Printf("getTempHumidity error: %v", err)
+		}
+	}(resp.Body)
 
 	var weatherResponse WeatherResponse
 	err = json.NewDecoder(resp.Body).Decode(&weatherResponse)
@@ -326,7 +332,12 @@ func insertDB(data []interface{}) {
 		loger.Error.Fatal("Error creating InfluxDB Client: ", err)
 	}
 
-	defer c.Close()
+	defer func(c client.Client) {
+		err := c.Close()
+		if err != nil {
+			loger.Error.Fatal("Error closing InfluxDB Client: ", err)
+		}
+	}(c)
 
 	bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  AppConfig.Database,
